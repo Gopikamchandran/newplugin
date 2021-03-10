@@ -10,55 +10,49 @@
  *License: GPLv2 or later
  *Text Domain: mymeta_plugin
  */
-?><!DOCTYPE html>
-<html><head>
-	<link href="style.css" rel="stylesheet">
-</head><body>
-<?php
+
 defined( 'ABSPATH' ) or die();
 class mymeta_plugin{
 
 function __construct(){
 add_action("admin_init",array($this,"custom_metabox"));
 add_action("save_post",array($this,"save_detail"));
-add_filter("the_content",array($this,"callback_fun"));
-}
+add_action('wp_enqueue_scripts',array($this,'use_style'));
+add_filter("the_content",array($this,"display_fun"));
+}//function to the hook functions
 function custom_metabox(){
 	add_meta_box("custom_metabox_01","Custom Metabox",array($this,"custom_metabox_field"),"post","normal","low");
-}
+}//function to add a meta box
 function custom_metabox_field(){
 	global $post;
 
 	$data = get_post_custom($post->ID);
-	$val = isset($data['custom_input'])? esc_attr($data['custom_input'][0]): 'no value';
+	$val = isset($data['textbox'])? esc_attr($data['textbox'][0]): 'no value';
 
-	echo'<input type="text" name="custom_input" id="custom_input" value="'.$val.'"/>';?>
-	<label for="custom_input_check">Show</label>
+	echo'<input type="text" name="textbox" id="textbox" value="'.$val.'"/>';?>
+	<label for="checkbox_value">Show</label>
 
 	<?php
-	$custom_checkbox=esc_attr(get_post_meta($post->ID,'custom_input_check',true));
+	$custom_checkbox=esc_attr(get_post_meta($post->ID,'checkbox_value',true));
 	if($custom_checkbox == ""){
 		?>
-		<input name="custom_input_check" type="checkbox" value="true"/>
+		<input name="checkbox_value" type="checkbox" value="true"/>
 		<?php
 	}
 	else if($custom_checkbox == "true"){
 		?>
-		<input name="custom_input_check" type="checkbox" value="true" checked/>
+		<input name="checkbox_value" type="checkbox" value="true" checked/>
 		<?php
 	}
-
-		//$custom_checkbox_val='checked="checked"';
-	//	echo'<input type="checkbox" name="custom_input_check" id="custom_input_check" value="'.$val.'"/>';
-		//echo'<label>Show</label>';
-}		
-function callback_fun($content){
+		
+}	// function to work in backend where we accept input	
+function display_fun($content){
 	global $post;
 
 
-	$custom_checkbox = esc_attr(get_post_meta($post->ID,'custom_input_check',true));
+	$custom_checkbox = esc_attr(get_post_meta($post->ID,'checkbox_value',true));
 	if($custom_checkbox == "true"){
-		$callback_fun = esc_attr(get_post_meta($post->ID,'custom_input',true));
+		$callback_fun = esc_attr(get_post_meta($post->ID,'textbox',true));
 		$post1 = "<div class='display_meta'>$callback_fun</div>";
 		return $post1 . $content;
 	}
@@ -67,23 +61,28 @@ function callback_fun($content){
 	}
 	
 
-}
+}//function to display the content in  frontend
 
+function use_style() {
+    wp_register_style( 'namespace', 'http://localhost/wordpress_t4/wp-content/plugins/mymeta_plugin/style.css' );
+    wp_enqueue_style( 'namespace' );
+    //wp_enqueue_script( 'namespaceformyscript', 'http://locationofscript.com/myscript.js', array( 'jquery' ) );
+}//function to attach css and js file
 function save_detail(){
 	global $post;
 	if(defined('DOING_AUTOSAVE')&& DOING_AUTOSAVE){
 		return $post->ID;
 	}
 	
-	$txtbox = sanitize_text_field($_POST['custom_input']);
-	update_post_meta($post->ID,'custom_input',$txtbox);
-	$chkbox = sanitize_key($_POST['custom_input_check']);
-	update_post_meta($post->ID,'custom_input_check',$chkbox);
+	$txtbox = sanitize_text_field($_POST['textbox']);
+	update_post_meta($post->ID,'textbox',$txtbox);
+	$chkbox = sanitize_key($_POST['checkbox_value']);
+	update_post_meta($post->ID,'checkbox_value',$chkbox);
 	
-}
+}//where the data are saved to the database
 
 }
-$mymeta = new mymeta_plugin();
+$mymeta = new mymeta_plugin();//created an object variable to call the class
 if (!function_exists('write_log')) {
 	function write_log ( $log )  {
 		if ( true === WP_DEBUG ) {
@@ -95,4 +94,4 @@ if (!function_exists('write_log')) {
 		}
 	}
 } ?>
-</body></html>
+
