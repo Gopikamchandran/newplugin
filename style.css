@@ -1,0 +1,8 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat:600,900');
+
+.display_meta{
+	font-family:Montserrat;
+	color: blue; 
+	text-align: center;
+	font-weight: 20px;
+}
